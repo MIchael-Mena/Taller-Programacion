@@ -341,7 +341,7 @@ mix test --cover
 ### Métricas de Calidad Actuales
 - **Total de tests**: 57 pruebas (1 doctest + 56 tests unitarios)
 - **Estado de ejecución**: ✅ Funcionalidad core completamente verificada
-- **Cobertura de código**: >90% (cumple requisito especificado en TP1)
+- **Cobertura de código**: >90%
 - **Gestión de dependencias**: Los tests generan automáticamente archivos temporales necesarios
 
 **Funcionalidades verificadas mediante testing:**
