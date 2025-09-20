@@ -1,4 +1,0 @@
-id_transaccion;timestamp;moneda_origen;moneda_destino;monto;cuenta_origen;cuenta_destino;tipo
-1;1754937004;USDT;USDT;100.5;userA;userB;transferencia
-2;1754937104;BTC;USDT;0.5;userB;;swap
-3;1754937204;BTC;;50.0;userA;;alta_cuenta

@@ -1,2 +1,0 @@
-id_transaccion;timestamp;moneda_origen;moneda_destino;monto;cuenta_origen;cuenta_destino;tipo
-1;1754937004;USDT;USDT;100.5;userA;userB;invalid_tipo
