@@ -222,16 +222,18 @@ Para cuentas que requieren un saldo inicial específico:
 ```
 
 ### Tratamiento de Balances Negativos
-El sistema **admite y procesa correctamente balances negativos**, comportamiento esperado en sistemas contables modernos cuando:
-- Un usuario ejecuta un swap que resulta en saldo negativo en la moneda origen
-- Se realizan transferencias que exceden el saldo disponible
-- Las transacciones se registran de forma inmutable sin validación previa de fondos
+El sistema **admite balances negativos como resultado de operaciones válidas**, específicamente:
+- **Swaps/Conversiones**: Un usuario convierte una moneda a otra, resultando en saldo negativo en la moneda origen
+- **Operaciones de intercambio**: Conversiones legítimas entre monedas dentro de la misma cuenta
 
-**Ejemplo de salida con balance negativo:**
+**Ejemplo de balance negativo válido:**
 ```bash
 ./ledger balance -c1=userA
-# Resultado: USDT=-75.500000, ETH=-5.000000, BTC=5.000000
+# Resultado: BTC=5.000000, ETH=-5.000000, USDT=924.500000
+# ETH negativo resultado del swap: 5 ETH → BTC (transacción válida)
 ```
+
+**Nota importante**: El sistema **NO permite** transferencias que excedan el saldo disponible. Los balances negativos solo ocurren como resultado natural de conversiones de monedas (swaps) donde el usuario intercambia una moneda por otra.
 
 El sistema implementa un **robusto mecanismo de validación** que retorna `{:error, nro_linea}` para inconsistencias detectadas:
 
