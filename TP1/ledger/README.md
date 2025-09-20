@@ -436,9 +436,3 @@ Para modificaciones del código fuente:
 mix escript.build
 ```
 
----
-
-**Nota final para evaluación**: Este proyecto cumple completamente con los requerimientos especificados en el TP1, implementando un sistema robusto de ledger con validación exhaustiva, manejo de errores según especificación, y cobertura de testing superior al 90% requerido.
-
-````
-
