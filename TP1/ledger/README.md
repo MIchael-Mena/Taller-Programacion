@@ -35,12 +35,15 @@ mix escript.build
 
 Este proceso genera el archivo ejecutable `ledger` en el directorio raíz del proyecto.
 
+**Para modificaciones del código fuente**: Ejecutar nuevamente `mix escript.build` para recompilar.
+
 ### Archivos de Datos por Defecto
 
 El proyecto incluye archivos CSV preconfigurados para facilitar la evaluación inmediata:
 
-- **`transacciones.csv`**: Conjunto de transacciones de ejemplo que demuestran todos los tipos soportados
-- **`monedas.csv`**: Registro de monedas disponibles con cotizaciones en USD según especificación
+- **`transacciones.csv`** y **`monedas.csv`**: Archivos por defecto del sistema
+- **Formato técnico**: Ver sección [Especificación de Formato de Datos](#especificación-de-formato-de-datos)
+- **Archivos de respaldo**: Disponibles en directorio `examples/` (ver [Recursos de Datos de Ejemplo](#recursos-de-datos-de-ejemplo))
 
 Estos archivos permiten la ejecución inmediata del sistema sin configuración adicional:
 
@@ -74,7 +77,7 @@ El sistema expone su funcionalidad a través de una interfaz de comandos estruct
 Para evaluación inmediata del sistema:
 
 ```bash
-# 1. Compilación (ejecutar una sola vez)
+# 1. Compilación (ver sección "Proceso de Compilación" para detalles)
 mix escript.build
 
 # 2. Listar todas las transacciones registradas
@@ -235,13 +238,7 @@ El sistema **admite balances negativos como resultado de operaciones válidas**,
 
 **Filosofía de diseño**: El sistema actúa como un **libro contable inmutable** que registra todas las transacciones tal como se especifican, sin validaciones de saldo previas. Esto permite flexibilidad operativa y refleja el comportamiento de sistemas financieros donde las transacciones se procesan y los balances negativos son posibles.
 
-El sistema implementa un **robusto mecanismo de validación** que retorna `{:error, nro_linea}` para inconsistencias detectadas:
-
-- **Errores de formato CSV**: Número incorrecto de campos o tipos de datos inválidos
-- **Validación de montos**: Montos negativos en transacciones (permitidos en balances resultantes)
-- **Validación de monedas**: Referencias a monedas no definidas en el archivo de cotizaciones
-- **Validación de tipos**: Tipos de transacción no reconocidos
-- **Validación de lógica**: Campos faltantes o inconsistentes según el tipo de transacción
+Para detalles completos sobre validaciones y manejo de errores, consultar la sección [Especificación de Manejo de Errores](#especificación-de-manejo-de-errores).
 
 #### **Especificación de Tipos de Transacción:**
 
@@ -265,11 +262,12 @@ El sistema implementa un **robusto mecanismo de validación** que retorna `{:err
 ## Especificación de Formato de Datos
 
 ### Archivo de Transacciones (`transacciones.csv`)
+**Formato**: Archivo CSV con 8 campos por registro
 ```
 id_transaccion;timestamp;moneda_origen;moneda_destino;monto;cuenta_origen;cuenta_destino;tipo
 ```
 
-**Conjunto de datos de ejemplo:**
+**Conjunto de datos de ejemplo** (archivo por defecto del sistema):
 ```
 1;1754800000;USDT;;1000.0;userA;;alta_cuenta
 2;1754900000;BTC;;1.0;userC;;alta_cuenta  
@@ -279,22 +277,19 @@ id_transaccion;timestamp;moneda_origen;moneda_destino;monto;cuenta_origen;cuenta
 ```
 
 ### Archivo de Monedas (`monedas.csv`)
+**Formato**: Archivo CSV con 2 campos por registro
 ```
 nombre_moneda;precio_usd
 ```
 
-**Cotizaciones de referencia:**
+**Cotizaciones de referencia** (archivo por defecto del sistema):
 ```
 BTC;55000.0
 ETH;3000.0
 USDT;1.0
 ```
 
-## Ejemplos
-
-El directorio `examples/` contiene archivos de muestra listos para usar:
-- `examples/transacciones.csv` - Transacciones de ejemplo
-- `examples/monedas.csv` - Monedas con precios según TP1
+**Ubicación**: Los archivos `transacciones.csv` y `monedas.csv` en el directorio raíz son los archivos por defecto utilizados automáticamente por el sistema.
 
 ## Evaluación y Testing
 
@@ -315,7 +310,6 @@ mix test --cover
 - **Gestión de dependencias**: Los tests generan automáticamente archivos temporales necesarios
 
 **Funcionalidades verificadas mediante testing:**
-- ✅ Procesamiento de argumentos sin warnings de deprecación
 - ✅ Operación correcta de comandos `transacciones` y `balance`
 - ✅ Funcionamiento de todos los parámetros (`-c1`, `-c2`, `-t`, `-m`, `-o`)
 - ✅ Sistema de validación con formato `{:error, nro_linea}`
@@ -324,19 +318,20 @@ mix test --cover
 
 ## Especificación de Manejo de Errores
 
-El sistema implementa un manejo robusto de errores que retorna `{:error, nro_linea}` para los siguientes casos:
+El sistema implementa un **robusto mecanismo de validación** que retorna `{:error, nro_linea}` para inconsistencias detectadas en archivos CSV. Todos los errores indican la línea específica donde se detectó el problema para facilitar la corrección.
 
 ### Errores de Validación de Datos
-1. **Formato CSV inconsistente**: Número incorrecto de campos por registro
+1. **Formato CSV inconsistente**: Número incorrecto de campos por registro (debe ser 8 campos)
 2. **Tipos de datos inválidos**: Identificadores, timestamps o montos con formato incorrecto
 3. **Validación de montos**: Valores negativos en transacciones (permitidos en balances calculados)
 4. **Referencias de monedas**: Monedas no definidas en el archivo de cotizaciones
-5. **Tipos de transacción**: Tipos no reconocidos por el sistema
+5. **Tipos de transacción**: Tipos no reconocidos por el sistema (solo: transferencia, swap, alta_cuenta)
 6. **Consistencia lógica**: Campos faltantes o inconsistentes según el tipo de transacción
 
 ### Errores de Sistema
 - **Archivos no encontrados**: Mensajes descriptivos para archivos de entrada inexistentes
-- **Archivos no encontrados**: Ambos comandos muestran mensajes descriptivos del tipo "Error al leer/calcular..."
+- **Errores de lectura**: Problemas de acceso o corrupción de archivos CSV
+- **Errores de escritura**: Problemas al crear archivos de salida (permisos, espacio en disco)
 
 ## Arquitectura del Proyecto
 
@@ -362,8 +357,7 @@ examples/
 
 ### Archivos de Configuración Principal
 - **`ledger`**: Ejecutable compilado del sistema
-- **`transacciones.csv`**: Archivo de transacciones por defecto para operación inmediata
-- **`monedas.csv`**: Archivo de cotizaciones por defecto
+- **`transacciones.csv`** y **`monedas.csv`**: Archivos por defecto del sistema (ver [Especificación de Formato de Datos](#especificación-de-formato-de-datos))
 - **`lib/`**: Código fuente principal de la aplicación
 - **`test/`**: Suite de tests unitarios y archivos de soporte
 - **`examples/`**: Conjunto de datos de ejemplo y documentación de casos de uso
@@ -372,13 +366,22 @@ examples/
 ### Gestión de Archivos Temporales
 El proyecto implementa una **política de limpieza automática** donde los tests generan archivos CSV específicos dinámicamente durante la ejecución y los eliminan al finalizar, manteniendo un entorno de desarrollo limpio.
 
-**Nota para evaluación**: Los archivos `transacciones.csv` y `monedas.csv` en la raíz son **archivos permanentes** necesarios para la operación por defecto del sistema. Cualquier archivo `.csv` adicional (ej: `test_*.csv`) son temporales y pueden eliminarse sin afectar la funcionalidad.
+**Nota para evaluación**: Los archivos CSV por defecto son **archivos permanentes** necesarios para la operación del sistema. Los archivos `.csv` temporales generados por tests (ej: `test_*.csv`) pueden eliminarse sin afectar la funcionalidad.
 
 ### Recursos de Datos de Ejemplo
 
-El directorio `examples/` contiene:
-- **`examples/transacciones.csv`**: Conjunto de transacciones que demuestra todos los tipos soportados
-- **`examples/monedas.csv`**: Cotizaciones de referencia según especificación TP1
+El directorio `examples/` contiene archivos de muestra listos para usar que demuestran todas las funcionalidades del sistema:
+- **`examples/transacciones.csv`**: Conjunto completo de transacciones que demuestra todos los tipos soportados (alta_cuenta, transferencia, swap)
+- **`examples/monedas.csv`**: Cotizaciones de referencia según especificación TP1 (BTC, ETH, USDT)
+
+**Propósito académico**: Estos archivos sirven como conjunto de respaldo de datos originales según especificación TP1, preservando la integridad de datos de referencia para evaluación.
+
+**Uso en desarrollo y testing**:
+```bash
+# Usar archivos de ejemplo para pruebas específicas
+./ledger transacciones -t=examples/transacciones.csv
+./ledger balance -c1=userA -t=examples/transacciones.csv
+```
 
 ### Diferenciación de Archivos de Datos
 
@@ -386,10 +389,9 @@ El directorio `examples/` contiene:
 - Se utilizan automáticamente cuando no se especifican parámetros alternativos
 - Se usan automáticamente cuando no especificas archivos
 - Permiten evaluación inmediata sin configuración adicional
-- **Ventaja académica**: Verificación instantánea de funcionalidades
 
 **Archivos de ejemplo (directorio `examples/`):**
-- Conjunto de respaldo de datos originales según especificación TP1
+- Referenciados en la sección [Recursos de Datos de Ejemplo](#recursos-de-datos-de-ejemplo) para detalles completos
 - **Ventaja académica**: Preservan integridad de datos de referencia
 
 **Procedimiento de restauración:**
@@ -398,11 +400,3 @@ El directorio `examples/` contiene:
 cp examples/transacciones.csv .
 cp examples/monedas.csv .
 ```
-
-## Proceso de Recompilación
-
-Para modificaciones del código fuente:
-```bash
-mix escript.build
-```
-
