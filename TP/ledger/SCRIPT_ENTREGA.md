@@ -24,6 +24,7 @@ El script `crear_entrega.sh` automatiza completamente el proceso de creación de
    - `lib/` - Código fuente completo
    - `test/` - Suite de tests (57 tests)
    - `examples/` - Datos de ejemplo
+   - `mix.lock` - Dependencias bloqueadas
    - `mix.exs` - Configuración del proyecto
    - `README.md` - Documentación académica
    - `.formatter.exs` - Configuración de formato (si existe)

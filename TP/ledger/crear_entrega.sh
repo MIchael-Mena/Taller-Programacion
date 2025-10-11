@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Script automatizado para crear ZIP de entrega del TP1 - Sistema Ledger
+# Script automatizado para crear ZIP de entrega del TP - Sistema Ledger
 # Autor: Sistema automatizado de entrega
 # Fecha: $(date +"%Y-%m-%d")
 
 set -e  # Salir si cualquier comando falla
 
-echo "🚀 INICIANDO PROCESO DE CREACIÓN DE ENTREGA TP1"
+echo "🚀 INICIANDO PROCESO DE CREACIÓN DE ENTREGA TP"
 echo "==============================================="
 
 # Colores para output
@@ -43,7 +43,7 @@ fi
 print_status "Verificando estructura del proyecto..."
 
 # Verificar archivos esenciales
-REQUIRED_FILES=("lib" "test" "examples" "mix.exs" "README.md" "ledger")
+REQUIRED_FILES=("lib" "test" "examples" "mix.exs" "README.md" "ledger" "mix.lock")
 for file in "${REQUIRED_FILES[@]}"; do
     if [ ! -e "$file" ]; then
         print_error "Archivo/directorio requerido no encontrado: $file"
@@ -82,7 +82,7 @@ else
 fi
 
 # Crear directorio temporal para la entrega
-TEMP_DIR="../tp1-entrega-$(date +%Y%m%d-%H%M%S)"
+TEMP_DIR="../tp-entrega-$(date +%Y%m%d-%H%M%S)"
 print_status "Creando estructura de entrega en: $TEMP_DIR"
 
 mkdir -p "$TEMP_DIR"
@@ -95,6 +95,7 @@ cp -r examples "$TEMP_DIR/"
 
 print_status "Copiando archivos de configuración..."
 cp mix.exs "$TEMP_DIR/"
+cp mix.lock "$TEMP_DIR/"
 cp README.md "$TEMP_DIR/"
 
 # Copiar .formatter.exs si existe
@@ -136,7 +137,7 @@ fi
 cd - > /dev/null
 
 # Crear el ZIP final
-ZIP_NAME="TP1-Sistema-Ledger-$(date +%Y%m%d-%H%M%S).zip"
+ZIP_NAME="TP-Sistema-Ledger-$(date +%Y%m%d-%H%M%S).zip"
 print_status "Creando archivo ZIP: $ZIP_NAME"
 
 cd "$(dirname "$TEMP_DIR")"
@@ -170,6 +171,7 @@ echo "├── lib/              # Código fuente completo"
 echo "├── test/             # Suite de tests (57 tests)"
 echo "├── examples/         # Datos de ejemplo"
 echo "├── mix.exs           # Configuración del proyecto"
+echo "├── mix.lock          # Dependencias bloqueadas"
 echo "├── README.md         # Documentación académica"
 echo "├── ledger            # Ejecutable precompilado"
 echo "├── transacciones.csv # Datos por defecto"
@@ -184,4 +186,4 @@ rm -rf "$TEMP_DIR"
 print_success "Limpieza completada"
 
 echo ""
-echo "🚀 Para entregar el TP1, envía el archivo: $ZIP_NAME"
+echo "🚀 Para entregar el TP, envía el archivo: $ZIP_NAME"
