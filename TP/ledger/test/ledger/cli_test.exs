@@ -110,15 +110,21 @@ defmodule Ledger.CLITest do
       assert output =~ "Error al leer archivo_inexistente.csv"
     end
 
-    test "guarda salida en archivo cuando se especifica --o" do
+    test "guarda salida en archivo cuando se especifica --out" do
       archivo_salida = "test_output.csv"
 
       # Asegurar que no existe el archivo
       File.rm(archivo_salida)
 
-      output = capture_io(fn ->
-        CLI.main(["transacciones", "-t=#{@debug_simple_file}", "-m=#{@test_monedas_file}", "-o=#{archivo_salida}"])
-      end)
+      output =
+        capture_io(fn ->
+          CLI.main([
+            "transacciones",
+            "-t=#{@debug_simple_file}",
+            "-m=#{@test_monedas_file}",
+            "-out=#{archivo_salida}"
+          ])
+        end)
 
       assert output =~ "Transacciones guardadas en #{archivo_salida}"
       assert File.exists?(archivo_salida)
@@ -133,9 +139,15 @@ defmodule Ledger.CLITest do
     end
 
     test "maneja error al escribir archivo de salida" do
-      output = capture_io(fn ->
-        CLI.main(["transacciones", "-t=#{@debug_simple_file}", "-m=#{@test_monedas_file}", "-o=/directorio_inexistente/salida.csv"])
-      end)
+      output =
+        capture_io(fn ->
+          CLI.main([
+            "transacciones",
+            "-t=#{@debug_simple_file}",
+            "-m=#{@test_monedas_file}",
+            "-out=/directorio_inexistente/salida.csv"
+          ])
+        end)
 
       assert output =~ "Error al escribir en /directorio_inexistente/salida.csv"
     end

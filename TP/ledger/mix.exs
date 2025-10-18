@@ -22,6 +22,7 @@ defmodule Ledger.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
+      mod: {Ledger.Application, []},
       extra_applications: [:logger]
     ]
   end
@@ -29,6 +30,8 @@ defmodule Ledger.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:ecto_sql, "~> 3.12"},
+      {:postgrex, "~> 0.19"},
       {:excoveralls, "~> 0.18", only: :test}
     ]
   end

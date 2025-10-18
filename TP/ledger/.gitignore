@@ -26,3 +26,6 @@ ledger-*.tar
 /*.csv
 test_*.csv
 temp_*.csv
+
+# Volúmenes de Docker
+.volumes/
