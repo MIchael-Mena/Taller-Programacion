@@ -38,9 +38,13 @@
 - [Funcionalidades del Sistema - TP1](#funcionalidades-del-sistema---tp1)
   - [Listado de Transacciones](#1-listado-de-transacciones)
   - [Cálculo de Balances](#2-cálculo-de-balances)
+  - [Especificación de Parámetros](#especificación-de-parámetros)
+  - [Características Técnicas Avanzadas (TP1)](#características-técnicas-avanzadas-tp1---sistema-csv)
+  - [Arquitectura y Modelo de Datos](#arquitectura-y-modelo-de-datos)
+  - [Especificación de Formato de Datos](#especificación-de-formato-de-datos)
 
 ### 🧪 Testing y Calidad
-- [Sistema de Testing](#sistema-de-testing)
+- [Evaluación y Testing](#evaluación-y-testing)
   - [Ejecutar Tests](#ejecutar-tests)
   - [Cobertura de Tests](#cobertura-de-tests)
   - [Métricas de Calidad Actuales](#métricas-de-calidad-actuales)
@@ -50,10 +54,20 @@
 - [Arquitectura del Proyecto](#arquitectura-del-proyecto)
 - [Estructura del Código](#estructura-del-código)
 - [Decisiones de Diseño](#decisiones-de-diseño)
+- [Gestión de Configuración (TP2)](#gestión-de-configuración-tp2)
+- [Compatibilidad entre TP1 y TP2](#compatibilidad-entre-tp1-y-tp2)
+
+### 🛠️ Herramientas de Desarrollo
+- [Utilidades de Desarrollo](#utilidades-de-desarrollo)
+  - [Makefile](#makefile)
+  - [Docker Compose](#docker-compose)
+- [Gestión de Archivos y Datos - TP1](#gestión-de-archivos-y-datos---tp1)
+- [Contribuciones y Desarrollo](#contribuciones-y-desarrollo)
 
 ### 🔧 Troubleshooting y Recursos
 - [Troubleshooting](#troubleshooting)
 - [Recursos Adicionales](#recursos-adicionales)
+- [Estado del Proyecto](#estado-del-proyecto)
 - [Licencia y Autoría](#licencia-y-autoría)
 
 ---
@@ -1628,7 +1642,9 @@ Los filtros `-c1` y `-c2` pueden usarse individualmente o en combinación con **
 
 **Justificación técnica**: El balance de una cuenta debe incluir todas sus transacciones (como origen y destino) para ser matemáticamente correcto, independientemente de filtros adicionales.
 
-## Características Técnicas Avanzadas
+## Características Técnicas Avanzadas (TP1 - Sistema CSV)
+
+> **⚠️ Nota**: Esta sección describe funcionalidades específicas del **TP1** (sistema basado en archivos CSV). Para las funcionalidades del **TP2** (sistema con base de datos PostgreSQL), consultar la sección [Comandos TP2](#comandos-tp2-base-de-datos).
 
 ### Eliminación de Warnings de Deprecación
 El sistema implementa un **preprocesador de argumentos** que elimina automáticamente los warnings de Elixir relacionados con aliases multi-carácter. Esta implementación permite el uso de la sintaxis simplificada `-c1` y `-c2` sin generar mensajes de advertencia durante la ejecución.
@@ -1679,6 +1695,21 @@ El sistema **admite balances negativos como resultado de operaciones válidas**,
 **Filosofía de diseño**: El sistema actúa como un **libro contable inmutable** que registra todas las transacciones tal como se especifican, sin validaciones de saldo previas. Esto permite flexibilidad operativa y refleja el comportamiento de sistemas financieros donde las transacciones se procesan y los balances negativos son posibles.
 
 Para detalles completos sobre validaciones y manejo de errores, consultar la sección [Especificación de Manejo de Errores](#especificación-de-manejo-de-errores).
+
+---
+
+### 🔄 Diferencias con TP2 (Base de Datos)
+
+En el **TP2**, el modelo cambia significativamente:
+
+- **Cuentas**: Se crean explícitamente mediante comandos `account add`, no de forma implícita
+- **Validaciones**: Se valida la existencia de cuentas, usuarios y monedas antes de crear transacciones
+- **Balances negativos**: Se previenen mediante validaciones de saldo antes de ejecutar transacciones
+- **Preprocesamiento de argumentos**: No es necesario, se usan comandos estructurados (`transaction list`, `account balance`)
+
+Ver [Comandos TP2 (Base de Datos)](#comandos-tp2-base-de-datos) para más detalles.
+
+---
 
 #### **Especificación de Tipos de Transacción:**
 
@@ -1899,7 +1930,7 @@ mix ecto.migrations
 mix ecto.reset
 ```
 
-## Evaluación y Testing
+## Estructura del Código
 
 ### Archivos de Configuración Principal
 - **`ledger`**: Ejecutable compilado del sistema
@@ -2047,40 +2078,143 @@ docker-compose down -v && docker-compose up -d
 
 ## Troubleshooting
 
-### Problemas Comunes - TP2
+### Problema 1: Conexión a PostgreSQL rechazada
 
-**Error: "relation users does not exist"**
-```bash
-# Solución: Ejecutar migraciones
-mix ecto.migrate
-
-# Si persiste, recrear base de datos
-mix ecto.drop && mix ecto.create && mix ecto.migrate
+**Error**:
+```
+** (Postgrex.Error) connection not available and request was dropped from queue
 ```
 
-**Error: "could not connect to server"**
+**Solución**:
 ```bash
-# Verificar que PostgreSQL esté corriendo
+# Verificar que PostgreSQL está corriendo
 docker ps
-# o
-pg_isready
+# Debería mostrar un contenedor con postgres:17-alpine
 
-# Iniciar PostgreSQL
+# Si no está corriendo, iniciar Docker Compose
+docker-compose up -d
+
+# Verificar logs de PostgreSQL
+docker-compose logs postgres
+
+# Si aún falla, recrear contenedor
+docker-compose down
 docker-compose up -d
 ```
 
-**Error en tests: "ownership timeout"**
-```bash
-# Recrear base de datos de test
-MIX_ENV=test mix ecto.drop
-MIX_ENV=test mix ecto.create
-MIX_ENV=test mix ecto.migrate
+### Problema 2: Puerto 5432 ocupado
+
+**Error**:
+```
+Error starting userland proxy: listen tcp 0.0.0.0:5432: bind: address already in use
 ```
 
-**Ejecutable no refleja cambios**
+**Solución**:
+```bash
+# Opción 1: Detener PostgreSQL local
+sudo systemctl stop postgresql
+
+# Opción 2: Cambiar puerto en docker-compose.yml
+# Editar: ports: ["5433:5432"]
+# Y actualizar config/dev.exs y config/test.exs
+
+# Opción 3: Usar PostgreSQL local sin Docker
+# Editar config/dev.exs con tus credenciales locales
+```
+
+### Problema 3: Base de datos no existe
+
+**Error**:
+```
+** (Postgrex.Error) FATAL 3D000 (invalid_catalog_name) database "ledger_dev" does not exist
+```
+
+**Solución**:
+```bash
+# Crear bases de datos
+mix ecto.create
+
+# Si falla, recrear todo
+mix ecto.reset
+```
+
+### Problema 4: Migraciones pendientes
+
+**Error**:
+```
+** (Postgrex.Error) ERROR 42P01 (undefined_table) relation "users" does not exist
+```
+
+**Solución**:
+```bash
+# Ejecutar migraciones
+mix ecto.migrate
+
+# Ver estado de migraciones
+mix ecto.migrations
+
+# Si hay problemas, resetear
+mix ecto.reset
+```
+
+### Problema 5: Tests fallan con timeout
+
+**Error**:
+```
+** (DBConnection.ConnectionError) connection not available
+```
+
+**Solución**:
+```bash
+# Crear base de datos de test
+MIX_ENV=test mix ecto.create
+MIX_ENV=test mix ecto.migrate
+
+# Ejecutar tests con configuración correcta
+mix test
+```
+
+### Problema 6: Ejecutable no refleja cambios
+
+**Solución**:
 ```bash
 # Recompilar el escript
 mix escript.build
+```
+
+### Problema 7: Permisos de ejecución del escript
+
+**Error**:
+```
+bash: ./ledger: Permission denied
+```
+
+**Solución**:
+```bash
+# Dar permisos de ejecución
+chmod +x ledger
+
+# Verificar
+ls -l ledger
+# Debería mostrar: -rwxr-xr-x ... ledger
+```
+
+### Problema 8: Dependencias no instaladas
+
+**Error**:
+```
+** (Mix) Could not find dependency ecto
+```
+
+**Solución**:
+```bash
+# Instalar dependencias
+mix deps.get
+
+# Si hay conflictos, limpiar y reinstalar
+mix deps.clean --all
+mix deps.get
+mix deps.compile
 ```
 
 ## Gestión de Archivos y Datos - TP1
@@ -2259,159 +2393,6 @@ Accounts.update_user(user, %{username: "nuevo_nombre"})
 ```
 
 ---
-
-## 🔧 Troubleshooting - Problemas Comunes
-
-### Problema 1: Conexión a PostgreSQL rechazada
-
-**Error**:
-```
-** (Postgrex.Error) connection not available and request was dropped from queue
-```
-
-**Solución**:
-```bash
-# Verificar que PostgreSQL está corriendo
-docker ps
-# Debería mostrar un contenedor con postgres:17-alpine
-
-# Si no está corriendo, iniciar Docker Compose
-docker-compose up -d
-
-# Verificar logs de PostgreSQL
-docker-compose logs postgres
-
-# Si aún falla, recrear contenedor
-docker-compose down
-docker-compose up -d
-```
-
-### Problema 2: Puerto 5432 ocupado
-
-**Error**:
-```
-Error starting userland proxy: listen tcp 0.0.0.0:5432: bind: address already in use
-```
-
-**Solución**:
-```bash
-# Opción 1: Detener PostgreSQL local
-sudo systemctl stop postgresql
-
-# Opción 2: Cambiar puerto en docker-compose.yml
-# Editar: ports: ["5433:5432"]
-# Y actualizar config/dev.exs y config/test.exs
-
-# Opción 3: Usar PostgreSQL local sin Docker
-# Editar config/dev.exs con tus credenciales locales
-```
-
-### Problema 3: Base de datos no existe
-
-**Error**:
-```
-** (Postgrex.Error) FATAL 3D000 (invalid_catalog_name) database "ledger_dev" does not exist
-```
-
-**Solución**:
-```bash
-# Crear bases de datos
-mix ecto.create
-
-# Si falla, recrear todo
-mix ecto.reset
-```
-
-### Problema 4: Migraciones pendientes
-
-**Error**:
-```
-** (Postgrex.Error) ERROR 42P01 (undefined_table) relation "users" does not exist
-```
-
-**Solución**:
-```bash
-# Ejecutar migraciones
-mix ecto.migrate
-
-# Ver estado de migraciones
-mix ecto.migrations
-
-# Si hay problemas, resetear
-mix ecto.reset
-```
-
-### Problema 5: Permisos de ejecución del escript
-
-**Error**:
-```
-bash: ./ledger: Permission denied
-```
-
-**Solución**:
-```bash
-# Dar permisos de ejecución
-chmod +x ledger
-
-# Verificar
-ls -l ledger
-# Debería mostrar: -rwxr-xr-x ... ledger
-```
-
-### Problema 6: Comando no encontrado después de compilar
-
-**Error**:
-```
-./ledger: command not found
-```
-
-**Solución**:
-```bash
-# Asegurarse de estar en el directorio correcto
-pwd
-# Debería mostrar: .../TP/ledger
-
-# Regenerar escript
-mix escript.build
-
-# Verificar que se creó
-ls -l ledger
-```
-
-### Problema 7: Tests fallan con timeout
-
-**Error**:
-```
-** (DBConnection.ConnectionError) connection not available
-```
-
-**Solución**:
-```bash
-# Crear base de datos de test
-MIX_ENV=test mix ecto.create
-MIX_ENV=test mix ecto.migrate
-
-# Ejecutar tests con configuración correcta
-mix test
-```
-
-### Problema 8: Dependencias no instaladas
-
-**Error**:
-```
-** (Mix) Could not find dependency ecto
-```
-
-**Solución**:
-```bash
-# Instalar dependencias
-mix deps.get
-
-# Si hay conflictos, limpiar y reinstalar
-mix deps.clean --all
-mix deps.get
-mix deps.compile
-```
 
 ### Problema 9: Warnings en compilación
 
