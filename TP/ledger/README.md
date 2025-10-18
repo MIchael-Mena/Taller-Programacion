@@ -872,7 +872,7 @@ El sistema expone su funcionalidad a través de una interfaz de comandos estruct
 ./ledger borrar_moneda -id=<id-moneda>
 ```
 
-#### Gestión de Transacciones (Próximamente)
+#### Gestión de Transacciones
 ```bash
 # Dar de alta una cuenta (crea cuenta con balance inicial)
 ./ledger alta_cuenta -u=<id-usuario> -m=<id-moneda> -a=<monto>
@@ -887,10 +887,6 @@ El sistema expone su funcionalidad a través de una interfaz de comandos estruct
 ./ledger deshacer_transaccion -id=<id-transaccion>
 
 # Ver información de transacción
-./ledger ver_transaccion -id=<id-transaccion>
-```
-
-# Ver transacción
 ./ledger ver_transaccion -id=<id-transaccion>
 ```
 
@@ -2150,78 +2146,54 @@ tp2                          # Rama principal para TP2
     └── currencies_test.exs # ✅ Tests Monedas (34 tests)
 ```
 
-## Roadmap del Proyecto
+## Estado del Proyecto
 
-### ✅ Completado
+### ✅ TP1 - Completado
 
-- [x] **TP1**: Sistema completo basado en CSV
-  - [x] Lectura y validación de transacciones
-  - [x] Cálculo de balances multi-moneda
-  - [x] Conversión entre monedas
-  - [x] 57 tests con alta cobertura
-  
-- [x] **TP2 - Fase 1**: Entidad Usuario
-  - [x] Migración de base de datos
-  - [x] Schema con validaciones
-  - [x] Contexto CRUD completo
-  - [x] Comandos CLI
-  - [x] 21 tests (100% cobertura del módulo)
-
-- [x] **TP2 - Fase 2**: Entidad Moneda
-  - [x] Migración para tabla currencies
-  - [x] Schema con validaciones (nombre mayúsculas 3-4 letras, precio ≥ 0)
-  - [x] Contexto CRUD con validaciones de unicidad
-  - [x] Comandos CLI (crear, editar, ver, borrar)
-  - [x] 34 tests (100% cobertura del módulo)
-  - [x] Validación de nombre inmutable (no se puede editar)
+- [x] Sistema completo basado en CSV
+- [x] Lectura y validación de transacciones
+- [x] Cálculo de balances multi-moneda
+- [x] Conversión entre monedas
+- [x] 57 tests con 100% de cobertura
 
 ### ✅ TP2 - Completado
 
-- [x] **TP2 - Entidad Usuario** ✅
-  - [x] Migración con validaciones
-  - [x] Schema con changesets
-  - [x] Contexto Accounts
-  - [x] Comandos CLI (crear, editar, ver, borrar)
-  - [x] 21 tests (100% cobertura schema, 95.2% context)
+- [x] **Entidad Usuario** (Accounts context)
+  - [x] Migración, schema, validaciones
+  - [x] CRUD completo via CLI
+  - [x] 21 tests (100% schema, 95.2% context)
 
-- [x] **TP2 - Entidad Moneda** ✅
-  - [x] Migración con constraints
-  - [x] Schema con validaciones
-  - [x] Contexto Currencies
-  - [x] Comandos CLI (crear, editar, ver, borrar)
-  - [x] 34 tests (100% cobertura schema, 93.3% context)
+- [x] **Entidad Moneda** (Currencies context)
+  - [x] Migración con constraints únicos
+  - [x] Validaciones (3-4 letras mayúsculas, precio ≥ 0, nombre inmutable)
+  - [x] CRUD completo via CLI
+  - [x] 34 tests (100% schema, 93.3% context)
 
-- [x] **TP2 - Entidad Cuenta** ✅
-  - [x] Migración con UNIQUE constraint
-  - [x] Schema con foreign keys
-  - [x] Contexto Banking
-  - [x] Comando CLI (alta_cuenta)
-  - [x] 38 tests (100% cobertura schema, 90.6% context)
+- [x] **Entidad Cuenta** (Banking context)
+  - [x] Migración con UNIQUE(user_id, currency_id)
+  - [x] Foreign keys a users y currencies
+  - [x] Lógica de balance
+  - [x] 38 tests (100% schema, 90.6% context)
 
-- [x] **TP2 - Entidad Transacción** ✅
-  - [x] Migración con foreign keys y precios históricos
+- [x] **Entidad Transacción** (Transactions context)
+  - [x] Migración con precios históricos (price_origin, price_destination, conversion_rate)
   - [x] Schema con validaciones complejas
-  - [x] Contexto Transactions
   - [x] Lógica de negocio completa:
-    - [x] alta_cuenta (crear cuenta con balance)
-    - [x] realizar_transferencia (entre usuarios)
-    - [x] realizar_swap (conversión de monedas)
+    - [x] alta_cuenta, realizar_transferencia, realizar_swap
     - [x] deshacer_transaccion (con precios históricos)
     - [x] ver_transaccion, listar transacciones
-  - [x] Comandos CLI (5 comandos)
-  - [x] 70 tests (100% cobertura schema, 96.3% context)
+  - [x] 70 tests (100% schema, 96.3% context)
 
-- [x] **TP2 - Integración TP1/TP2** ✅
+- [x] **Integración TP1 ↔ TP2**
   - [x] Auto-detección BD vs CSV
   - [x] Comandos `transacciones` y `balance` con doble modo
   - [x] Tests de integración
-  - [x] Precios históricos funcionando
 
-- [x] **TP2 - Finalización** ✅
-  - [x] Cobertura core modules >90%
-  - [x] Escript ejecutable generado
-  - [x] Documentación completa
-  - [x] 220 tests pasando, 0 failures
+- [x] **Calidad y Entrega**
+  - [x] 220 tests pasando, 0 failures, 0 warnings
+  - [x] Cobertura >90% en core modules
+  - [x] Escript ejecutable funcional
+  - [x] Documentación completa (2500+ líneas)
 
 ## Contribuciones y Desarrollo
 
